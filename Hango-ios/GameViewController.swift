@@ -14,10 +14,14 @@ class GameViewController: UIViewController {
     private let statusLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = .systemFont(ofSize: 28, weight: .semibold)
-        label.textColor = .label
+        label.font = AppTheme.Fonts.displayLarge()
+        label.textColor = AppTheme.Colors.ink
         label.textAlignment = .center
         label.numberOfLines = 0
+        label.lineBreakMode = .byWordWrapping
+        // 긴 텍스트가 잘리지 않도록 우선순위 상향
+        label.setContentHuggingPriority(.required, for: .vertical)
+        label.setContentCompressionResistancePriority(.required, for: .vertical)
         return label
     }()
 
@@ -50,7 +54,8 @@ class GameViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = .systemBackground
+        AppTheme.applyNavigationBarAppearance()
+        view.backgroundColor = AppTheme.Colors.hanjiBackground
         title = "Level 1"
         
         setupStatusLabel()
@@ -70,8 +75,8 @@ class GameViewController: UIViewController {
     
     private func setupCollectionView() {
         let layout = UICollectionViewFlowLayout()
-        layout.minimumLineSpacing = 8
-        layout.minimumLineSpacing = 8
+        layout.minimumLineSpacing = 10
+        layout.minimumInteritemSpacing = 10
 
         let sidePadding: CGFloat = 16
         let totalSpacing = CGFloat(numberOfColumns - 1) * layout.minimumInteritemSpacing
@@ -81,6 +86,8 @@ class GameViewController: UIViewController {
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.backgroundColor = .clear
+        collectionView.layer.cornerRadius = AppTheme.Metrics.cornerRadius
+        collectionView.contentInsetAdjustmentBehavior = .always
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.register(HangeulTileCell.self, forCellWithReuseIdentifier: HangeulTileCell.reuseIdentifier)
@@ -118,12 +125,18 @@ class GameViewController: UIViewController {
                 pathOverlayView.bottomAnchor.constraint(equalTo: collectionView.bottomAnchor)
             ])
             
-            pathLayer.strokeColor = UIColor.systemYellow.cgColor
-            pathLayer.lineWidth = 4
+            pathLayer.strokeColor = AppTheme.Colors.danGold.withAlphaComponent(0.95).cgColor
+            pathLayer.lineWidth = 5
             pathLayer.lineJoin = .round
             pathLayer.lineCap = .round
             pathLayer.fillColor = UIColor.clear.cgColor
             pathLayer.opacity = 0.0
+            
+            // subtle glow for emphasis
+            pathLayer.shadowColor = AppTheme.Colors.danGold.cgColor
+            pathLayer.shadowOpacity = 0.35
+            pathLayer.shadowRadius = 6
+            pathLayer.shadowOffset = CGSize(width: 0, height: 0)
             
             pathOverlayView.layer.addSublayer(pathLayer)
         } else {
@@ -168,6 +181,19 @@ class GameViewController: UIViewController {
         }
         
         return pool
+    }
+
+    // MARK: - Status text helper (UI-only)
+    private func setStatusText(_ text: String, compact: Bool) {
+        // compact: 성공/실패 안내 등은 작은 폰트 + 최대 2줄
+        if compact {
+            statusLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
+            statusLabel.numberOfLines = 2
+        } else {
+            statusLabel.font = AppTheme.Fonts.displayLarge()
+            statusLabel.numberOfLines = 0 // 필요한 만큼 줄바꿈
+        }
+        statusLabel.text = text
     }
 }
 
@@ -254,15 +280,15 @@ extension GameViewController: UICollectionViewDataSource, UICollectionViewDelega
         switch selectedIndexPaths.count {
         case 0:
             // 선택이 없을 때는 비워둔다.
-            statusLabel.text = ""
+            setStatusText("", compact: false)
         case 1:
             let idx = selectedIndexPaths[0].item
             let tile = tiles[idx]
-            statusLabel.text = tile.symbol
+            setStatusText(tile.symbol, compact: false)
         case 2:
             let firstTile = tiles[selectedIndexPaths[0].item]
             let secondTile = tiles[selectedIndexPaths[1].item]
-            statusLabel.text = "\(firstTile.symbol)  +  \(secondTile.symbol)"
+            setStatusText("\(firstTile.symbol)  +  \(secondTile.symbol)", compact: false)
         default:
             break
         }
@@ -362,7 +388,7 @@ extension GameViewController: UICollectionViewDataSource, UICollectionViewDelega
         cells.forEach { $0.playWrongAnimation() }
 
         let message = "Path is blocked."
-        statusLabel.text = message
+        setStatusText(message, compact: true)
 
         let reloadTargets = selectedIndexPaths
         selectedIndexPaths.removeAll()
@@ -398,7 +424,7 @@ extension GameViewController: UICollectionViewDataSource, UICollectionViewDelega
         print("✅ 성공: \(pair.consonant)+\(pair.vowel) => \(pair.syllable) (\(pair.syllableRoman))")
         
         let message = "\(pair.syllable) (\(pair.syllableRoman))"
-        statusLabel.text = message
+        setStatusText(message, compact: true)
         
         checkLevelClear()
         
@@ -414,7 +440,7 @@ extension GameViewController: UICollectionViewDataSource, UICollectionViewDelega
         cells.forEach { $0.playWrongAnimation() }
         
         let message = "Select consonant first, then vowel."
-        statusLabel.text = message
+        setStatusText(message, compact: true)
         
         // 선택 초기화
         let reloadTargets = selectedIndexPaths
@@ -430,7 +456,7 @@ extension GameViewController: UICollectionViewDataSource, UICollectionViewDelega
         cells.forEach { $0.playWrongAnimation() }
         
         let message = "Only Consonant + Vowel pair is allowed."
-        statusLabel.text = message
+        setStatusText(message, compact: true)
         
         // 선택 해제
         let reloadTargets = selectedIndexPaths
@@ -739,6 +765,9 @@ extension GameViewController: UICollectionViewDataSource, UICollectionViewDelega
         
         alert.addAction(reviewAction)
         alert.addAction(cancelAction)
+
+        // Tint to theme
+        alert.view.tintColor = AppTheme.Colors.danBlue
         
         present(alert, animated: true)
     }
@@ -751,6 +780,7 @@ extension GameViewController: UICollectionViewDataSource, UICollectionViewDelega
                 preferredStyle: .alert
             )
             alert.addAction(UIAlertAction(title: "OK", style: .default))
+            alert.view.tintColor = AppTheme.Colors.danBlue
             present(alert, animated: true)
             return
         }
@@ -770,6 +800,7 @@ extension GameViewController: UICollectionViewDataSource, UICollectionViewDelega
         )
         
         reviewAlert.addAction(UIAlertAction(title: "OK", style: .default))
+        reviewAlert.view.tintColor = AppTheme.Colors.danBlue
         
         present(reviewAlert, animated: true)
     }
@@ -782,6 +813,7 @@ extension GameViewController: UICollectionViewDataSource, UICollectionViewDelega
                 preferredStyle: .alert
             )
             alert.addAction(UIAlertAction(title: "OK", style: .default))
+            alert.view.tintColor = AppTheme.Colors.danBlue
             present(alert, animated: true)
             return
         }
@@ -802,4 +834,3 @@ extension GameViewController: UICollectionViewDataSource, UICollectionViewDelega
         }
     }
 }
-

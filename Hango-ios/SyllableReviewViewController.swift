@@ -35,7 +35,8 @@ final class SyllableReviewViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = AppTheme.Colors.hanjiBackground
+        AppTheme.applyNavigationBarAppearance()
         setupCollectionView()
         setupPageControl()
         setupNavigationItems()
@@ -86,8 +87,8 @@ final class SyllableReviewViewController: UIViewController {
         pageControl.translatesAutoresizingMaskIntoConstraints = false
         pageControl.numberOfPages = totalPages
         pageControl.currentPage = 0
-        pageControl.pageIndicatorTintColor = .systemGray4
-        pageControl.currentPageIndicatorTintColor = .systemBlue
+        pageControl.pageIndicatorTintColor = AppTheme.Colors.softLine
+        pageControl.currentPageIndicatorTintColor = AppTheme.Colors.danGreen
         
         view.addSubview(pageControl)
         
@@ -209,3 +210,4 @@ extension SyllableReviewViewController: UIScrollViewDelegate {
         pageControl.currentPage = max(0, min(page, totalPages - 1))
     }
 }
+

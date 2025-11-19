@@ -16,10 +16,10 @@ class ToastView: UIView {
 
     private let messageLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .white
-        label.font = .systemFont(ofSize: 14, weight: .medium)
+        label.textColor = UIColor.white
+        label.font = AppTheme.Fonts.labelSmall()
         label.textAlignment = .center
-        label.numberOfLines = 0
+        label.numberOfLines = 2
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -33,19 +33,19 @@ class ToastView: UIView {
         
         switch style {
         case .success:
-            backgroundColor = UIColor.systemGreen.withAlphaComponent(0.9)
+            backgroundColor = AppTheme.Colors.success.withAlphaComponent(0.95)
         case .fail:
-            backgroundColor = UIColor.systemRed.withAlphaComponent(0.9)
+            backgroundColor = AppTheme.Colors.failure.withAlphaComponent(0.95)
         }
         
         messageLabel.text = message
         
         addSubview(messageLabel)
         NSLayoutConstraint.activate([
-            messageLabel.topAnchor.constraint(equalTo: topAnchor, constant: 8),
-            messageLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
-            messageLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
-            messageLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8)
+            messageLabel.topAnchor.constraint(equalTo: topAnchor, constant: 10),
+            messageLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
+            messageLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14),
+            messageLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10)
         ])
     }
     
@@ -98,3 +98,4 @@ class ToastView: UIView {
         })
     }
 }
+
