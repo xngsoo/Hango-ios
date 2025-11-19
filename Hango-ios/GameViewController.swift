@@ -96,12 +96,14 @@ class GameViewController: UIViewController {
         let rows = numberOfRowsMax
         let gridHeight = itemWidth * CGFloat(rows)
             + layout.minimumLineSpacing * CGFloat(rows - 1)
+        let height = collectionView.heightAnchor.constraint(equalToConstant: gridHeight)
+        height.priority = .defaultHigh // 1000 -> 750 정도로 낮춰 라벨이 공간을 우선 확보
 
         NSLayoutConstraint.activate([
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: sidePadding),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -sidePadding),
             collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
-            collectionView.heightAnchor.constraint(equalToConstant: gridHeight),
+            height,
             collectionView.topAnchor.constraint(greaterThanOrEqualTo: statusLabel.bottomAnchor, constant: 16)
         ])
     }
@@ -177,7 +179,7 @@ class GameViewController: UIViewController {
     private func setStatusText(_ text: String, compact: Bool) {
         if compact {
             statusLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
-            statusLabel.numberOfLines = 2
+            statusLabel.numberOfLines = 0
         } else {
             statusLabel.font = AppTheme.Fonts.displayLarge()
             statusLabel.numberOfLines = 0
@@ -357,7 +359,8 @@ extension GameViewController: UICollectionViewDataSource, UICollectionViewDelega
         )
         learnedSyllables[pair.syllable] = detail
         
-        setStatusText("\(pair.syllable) (\(pair.syllableRoman))", compact: true)
+        // 성공 시 폰트 크기를 줄이지 않도록 compact: false 사용
+        setStatusText("\(pair.syllable) (\(pair.syllableRoman))", compact: false)
         
         checkLevelClear()
     }
@@ -380,7 +383,7 @@ extension GameViewController: UICollectionViewDataSource, UICollectionViewDelega
         let cells = selectedIndexPaths.compactMap { collectionView.cellForItem(at: $0) as? HangeulTileCell }
         cells.forEach { $0.playWrongAnimation() }
         
-        setStatusText("Only Consonant + Vowel pair is allowed.", compact: true)
+        setStatusText("Only Consonant + Vowel\npair is allowed.", compact: true)
         
         let reloadTargets = selectedIndexPaths
         selectedIndexPaths.removeAll()
