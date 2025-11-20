@@ -1,5 +1,5 @@
 //
-//  GameViewController.swift
+//  Level1ViewController.swift
 //  Hango-ios
 //
 //  Created by SEUNGSOO HAN on 11/19/25.
@@ -8,7 +8,7 @@
 import UIKit
 
 /// 메인 게임 화면
-class GameViewController: UIViewController {
+class Level1ViewController: UIViewController {
 
     // 상단 상태 라벨
     private let statusLabel: UILabel = {
@@ -26,7 +26,7 @@ class GameViewController: UIViewController {
 
     private var collectionView: UICollectionView!
     private let numberOfColumns: Int = 6
-    private let numberOfRowsMax: Int = 10
+    private let numberOfRowsMax: Int = 7
     
     // 전체 타일 배열 (그리드 순서대로)
     private var tiles: [HangeulTile] = []
@@ -77,9 +77,16 @@ class GameViewController: UIViewController {
         layout.minimumLineSpacing = 10
         layout.minimumInteritemSpacing = 10
 
-        let sidePadding: CGFloat = 16
+        // 컬렉션뷰 자체는 화면에 딱 붙이고, 내부 contentInset으로 시각적 패딩을 준다.
+        // 이렇게 해야 셀의 그림자가 가장자리에서도 자연스럽게 보인다.
+        let visualPadding: CGFloat = 16
+        let topPaddingInside: CGFloat = 12 // 위쪽 그림자도 살짝 보이게 약간의 여유
+        
+        // itemWidth 계산 시 contentInset을 고려한 가용 너비 사용
+        // view.bounds.width - 좌/우 인셋 - interItem spacing 총합
         let totalSpacing = CGFloat(numberOfColumns - 1) * layout.minimumInteritemSpacing
-        let itemWidth = (view.bounds.width - sidePadding * 2 - totalSpacing) / CGFloat(numberOfColumns)
+        let availableWidth = view.bounds.width - (visualPadding * 2) - totalSpacing
+        let itemWidth = max(1, floor(availableWidth / CGFloat(numberOfColumns)))
         layout.itemSize = CGSize(width: itemWidth, height: itemWidth)
 
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -87,25 +94,34 @@ class GameViewController: UIViewController {
         collectionView.backgroundColor = .clear
         collectionView.layer.cornerRadius = AppTheme.Metrics.cornerRadius
         collectionView.contentInsetAdjustmentBehavior = .always
+        collectionView.contentInset = UIEdgeInsets(top: topPaddingInside,
+                                                   left: visualPadding,
+                                                   bottom: visualPadding,
+                                                   right: visualPadding)
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.register(HangeulTileCell.self, forCellWithReuseIdentifier: HangeulTileCell.reuseIdentifier)
 
+        // 컬렉션뷰는 슈퍼뷰에 붙이되, 상태라벨 아래로 16만큼 띄움
         view.addSubview(collectionView)
 
         let rows = numberOfRowsMax
-        let gridHeight = itemWidth * CGFloat(rows)
-            + layout.minimumLineSpacing * CGFloat(rows - 1)
+        // 높이는 아이템 높이 * 행 수 + 행 간격*(행-1) + 상/하 contentInset까지 포함해 계산
+        let gridHeightCore = itemWidth * CGFloat(rows) + layout.minimumLineSpacing * CGFloat(rows - 1)
+        let gridHeight = gridHeightCore + topPaddingInside + visualPadding
         let height = collectionView.heightAnchor.constraint(equalToConstant: gridHeight)
-        height.priority = .defaultHigh // 1000 -> 750 정도로 낮춰 라벨이 공간을 우선 확보
+        height.priority = .defaultHigh // 라벨이 늘면 컬렉션뷰 높이가 살짝 양보
 
         NSLayoutConstraint.activate([
-            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: sidePadding),
-            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -sidePadding),
-            collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             height,
             collectionView.topAnchor.constraint(greaterThanOrEqualTo: statusLabel.bottomAnchor, constant: 16)
         ])
+        
+        // 그림자가 잘 보이도록 컬렉션뷰 자체는 클립하지 않음(기본값 false)
+        collectionView.clipsToBounds = false
     }
     
     private func setupPathOverlay() {
@@ -152,13 +168,11 @@ class GameViewController: UIViewController {
     private func generateRandomBoard() -> [HangeulTile] {
         var pool: [HangeulTile] = []
         
-        // 각 조합당 1세트씩 넣기 (자 + 모)
         for pair in level1ValidPairs {
             pool.append(HangeulTile(symbol: pair.consonant, type: .consonant))
             pool.append(HangeulTile(symbol: pair.vowel, type: .vowel))
         }
         
-        // 보드 칸 수(60개)를 채울 때까지 랜덤하게 추가로 채우기
         var index = 0
         while pool.count < maxTilesCount {
             let pair = level1ValidPairs[index % level1ValidPairs.count]
@@ -188,7 +202,7 @@ class GameViewController: UIViewController {
     }
 }
 
-extension GameViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+extension Level1ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return tiles.count
@@ -274,13 +288,11 @@ extension GameViewController: UICollectionViewDataSource, UICollectionViewDelega
         let isCV = (firstTile.type == .consonant && secondTile.type == .vowel)
         let isSameType = (firstTile.type == secondTile.type)
         
-        // 자+자 / 모+모 → 불가
         if isSameType {
             playWrongFeedback()
             return
         }
         
-        // 자/모 분리
         let consonantTile: HangeulTile
         let vowelTile: HangeulTile
         let consonantIndex: IndexPath
@@ -298,7 +310,6 @@ extension GameViewController: UICollectionViewDataSource, UICollectionViewDelega
             vowelIndex = firstIndex
         }
         
-        // 유효 조합인지 확인
         guard let pair = level1ValidPairs.first(where: {
             $0.consonant == consonantTile.symbol && $0.vowel == vowelTile.symbol
         }) else {
@@ -306,19 +317,16 @@ extension GameViewController: UICollectionViewDataSource, UICollectionViewDelega
             return
         }
         
-        // 경로 확인
         guard let gridPath = findPath(consonantIndex, vowelIndex) else {
             playBlockedFeedback()
             return
         }
         
-        // 순서 확인 (자 → 모)
         guard isCV else {
             playWrongOrderFeedback()
             return
         }
         
-        // 정답 처리
         showConnectionPath(gridPath: gridPath) { [weak self] in
             guard let self = self else { return }
             self.handleCorrectPair(firstIndex: firstIndex,
@@ -359,13 +367,11 @@ extension GameViewController: UICollectionViewDataSource, UICollectionViewDelega
         )
         learnedSyllables[pair.syllable] = detail
         
-        // 성공 시 폰트 크기를 줄이지 않도록 compact: false 사용
         setStatusText("\(pair.syllable) (\(pair.syllableRoman))", compact: false)
         
         checkLevelClear()
     }
     
-    /// 첫 번째 선택과 두 번째 선택 순서가 잘못된 경우 (자음 → 모음이 아닌 경우)
     private func playWrongOrderFeedback() {
         let cells = selectedIndexPaths.compactMap {
             collectionView.cellForItem(at: $0) as? HangeulTileCell
@@ -425,7 +431,7 @@ extension GameViewController: UICollectionViewDataSource, UICollectionViewDelega
         struct State {
             var r: Int
             var c: Int
-            var dir: Int   // 0: up, 1: right, 2: down, 3: left
+            var dir: Int
             var turns: Int
             var parentIndex: Int?
         }
@@ -588,20 +594,17 @@ extension GameViewController: UICollectionViewDataSource, UICollectionViewDelega
     }
     
     private func checkLevelClear() {
-        // 1) 타일이 하나도 안 남았으면 → 클리어
         let hasRemaining = tiles.contains { $0.isRemoved == false }
         if !hasRemaining {
             showLevelClearPopup()
             return
         }
         
-        // 2) 더 이상 만들 수 있는 조합(연결 가능한 자+모)이 없으면 → 클리어
         if !canMakeAnyMorePairs() {
             showLevelClearPopup()
         }
     }
     
-    // 현재 보드에서 level1ValidPairs 중 하나라도 "연결 가능한" 자+모 쌍이 남아있는지 검사
     private func canMakeAnyMorePairs() -> Bool {
         var consonantIndices: [String: [IndexPath]] = [:]
         var vowelIndices: [String: [IndexPath]] = [:]
