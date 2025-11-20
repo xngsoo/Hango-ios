@@ -40,6 +40,8 @@ final class SyllableReviewViewController: UIViewController {
         setupCollectionView()
         setupPageControl()
         setupNavigationItems()
+        // 초기 표시 상태 동기화
+        updateSkipVisibility(for: 0)
     }
     
     override func viewDidLayoutSubviews() {
@@ -116,6 +118,14 @@ final class SyllableReviewViewController: UIViewController {
                 action: #selector(didTapClose)
             )
         }
+        
+        // 우측 상단 Skip 버튼
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            title: "Skip",
+            style: .plain,
+            target: self,
+            action: #selector(didTapSkip)
+        )
     }
     
     @objc private func didTapClose() {
@@ -125,6 +135,19 @@ final class SyllableReviewViewController: UIViewController {
         } else {
             dismiss(animated: true, completion: nil)
         }
+    }
+    
+    @objc private func didTapSkip() {
+        // 마지막 페이지(축하 페이지)로 이동
+        let lastIndex = max(0, totalPages - 1) // items.count
+        let indexPath = IndexPath(item: lastIndex, section: 0)
+        // 레이아웃이 준비된 상태에서만 안전하게 스크롤
+        collectionView.layoutIfNeeded()
+        collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
+        // pageControl 동기화 (애니메이션 종료 후에도 scrollViewDidScroll에서 갱신되지만 즉시 반영)
+        pageControl.currentPage = lastIndex
+        // Skip 가시성 즉시 반영
+        updateSkipVisibility(for: lastIndex)
     }
     
     // MARK: - Helpers
@@ -138,6 +161,16 @@ final class SyllableReviewViewController: UIViewController {
         if pageControl.currentPage != clamped {
             pageControl.currentPage = clamped
         }
+        updateSkipVisibility(for: clamped)
+    }
+    
+    private func updateSkipVisibility(for page: Int) {
+        // 마지막 페이지(축하 셀)에서는 Skip 숨김
+        let isLastPage = (page == totalPages - 1)
+        navigationItem.rightBarButtonItem?.isEnabled = !isLastPage
+        navigationItem.rightBarButtonItem?.tintColor = isLastPage ? .clear : UINavigationBar.appearance().tintColor
+        // 접근성 상으로도 숨기고 싶다면 아래 라인으로 완전 제거하는 방법도 가능:
+        // navigationItem.rightBarButtonItem = isLastPage ? nil : navigationItem.rightBarButtonItem
     }
 }
 
@@ -207,7 +240,8 @@ extension SyllableReviewViewController: UIScrollViewDelegate {
         guard width > 0 else { return }
         
         let page = Int(round(scrollView.contentOffset.x / width))
-        pageControl.currentPage = max(0, min(page, totalPages - 1))
+        let clamped = max(0, min(page, totalPages - 1))
+        pageControl.currentPage = clamped
+        updateSkipVisibility(for: clamped)
     }
 }
-

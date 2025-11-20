@@ -93,6 +93,7 @@ final class SyllablePageCell: UICollectionViewCell {
     }
     
     private func setupLayout() {
+        contentView.backgroundColor = AppTheme.Colors.hanjiBackground
         contentView.addSubview(syllableLabel)
         contentView.addSubview(consonantTitleLabel)
         contentView.addSubview(consonantDetailLabel)

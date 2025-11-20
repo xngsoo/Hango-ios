@@ -19,6 +19,20 @@ class Level1ViewController: UIViewController {
         label.textAlignment = .center
         label.numberOfLines = 0
         label.lineBreakMode = .byWordWrapping
+        // 수직 가운데 정렬을 위해 높이 변경이 가능하도록 우선순위를 낮춘다
+        label.setContentHuggingPriority(.defaultLow, for: .vertical)
+        label.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        return label
+    }()
+    
+    // 발음 표기 라벨 (statusLabel 아래)
+    private let pronunciationLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = AppTheme.Fonts.body()
+        label.textColor = AppTheme.Colors.ink
+        label.textAlignment = .center
+        label.numberOfLines = 0
         label.setContentHuggingPriority(.required, for: .vertical)
         label.setContentCompressionResistancePriority(.required, for: .vertical)
         return label
@@ -50,6 +64,8 @@ class Level1ViewController: UIViewController {
         return numberOfColumns * numberOfRowsMax
     }
     
+    private var isInteractionLocked: Bool = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -58,6 +74,7 @@ class Level1ViewController: UIViewController {
         title = "Level 1"
         
         setupStatusLabel()
+        setupPronunciationLabel()
         setupCollectionView()
         setupPathOverlay()
         setupLevel1Tiles()
@@ -65,11 +82,21 @@ class Level1ViewController: UIViewController {
 
     private func setupStatusLabel() {
         view.addSubview(statusLabel)
+        
         NSLayoutConstraint.activate([
-            statusLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
             statusLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            statusLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+            statusLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
         ])
+    }
+    
+    private func setupPronunciationLabel() {
+        view.addSubview(pronunciationLabel)
+        NSLayoutConstraint.activate([
+            pronunciationLabel.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 6),
+            pronunciationLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            pronunciationLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+        ])
+        pronunciationLabel.text = "" // 초기 비움
     }
     
     private func setupCollectionView() {
@@ -102,7 +129,7 @@ class Level1ViewController: UIViewController {
         collectionView.delegate = self
         collectionView.register(HangeulTileCell.self, forCellWithReuseIdentifier: HangeulTileCell.reuseIdentifier)
 
-        // 컬렉션뷰는 슈퍼뷰에 붙이되, 상태라벨 아래로 16만큼 띄움
+        // 컬렉션뷰는 슈퍼뷰에 붙이되, 발음 라벨 아래로 16만큼 띄움
         view.addSubview(collectionView)
 
         let rows = numberOfRowsMax
@@ -116,8 +143,21 @@ class Level1ViewController: UIViewController {
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            height,
-            collectionView.topAnchor.constraint(greaterThanOrEqualTo: statusLabel.bottomAnchor, constant: 16)
+            height
+        ])
+
+        // 상단 safe area ~ 컬렉션뷰 top 사이를 나타내는 레이아웃 가이드
+        let headerGuide = UILayoutGuide()
+        view.addLayoutGuide(headerGuide)
+        
+        NSLayoutConstraint.activate([
+            headerGuide.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            headerGuide.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            headerGuide.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            headerGuide.bottomAnchor.constraint(equalTo: collectionView.topAnchor),
+            
+            // 상태/발음 라벨 그룹을 이 영역의 세로 중앙에 정렬
+            statusLabel.centerYAnchor.constraint(equalTo: headerGuide.centerYAnchor)
         ])
         
         // 그림자가 잘 보이도록 컬렉션뷰 자체는 클립하지 않음(기본값 false)
@@ -192,13 +232,37 @@ class Level1ViewController: UIViewController {
     // MARK: - Status text helper (UI-only)
     private func setStatusText(_ text: String, compact: Bool) {
         if compact {
-            statusLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
+            statusLabel.font = UIFont.systemFont(ofSize: 32, weight: .semibold)
             statusLabel.numberOfLines = 0
         } else {
-            statusLabel.font = AppTheme.Fonts.displayLarge()
+            statusLabel.font = UIFont.systemFont(ofSize: 56, weight: .semibold)
             statusLabel.numberOfLines = 0
         }
         statusLabel.text = text
+    }
+    
+    // 발음 표기 문자열 업데이트
+    private func setPronunciationText(_ text: String?) {
+        pronunciationLabel.text = text ?? ""
+    }
+
+    // 상태 라벨에 흔들리는 애니메이션 효과 추가 (오답/막힘 등 피드백용)
+    private func shakeStatusLabel() {
+        let animation = CAKeyframeAnimation(keyPath: "transform.translation.x")
+        animation.timingFunction = CAMediaTimingFunction(name: .linear)
+        animation.duration = 0.35
+        animation.values = [-6, 6, -5, 5, -3, 3, -1, 1, 0]
+        statusLabel.layer.add(animation, forKey: "shake")
+    }
+    
+    // 선택한 자/모의 로마자 표기를 가져오기 위한 헬퍼
+    private func romanForConsonant(_ symbol: String) -> String? {
+        // level1ValidPairs 중 해당 자음을 포함하는 아무 항목에서 roman을 가져온다.
+        return level1ValidPairs.first(where: { $0.consonant == symbol })?.consonantRoman
+    }
+    
+    private func romanForVowel(_ symbol: String) -> String? {
+        return level1ValidPairs.first(where: { $0.vowel == symbol })?.vowelRoman
     }
 }
 
@@ -231,6 +295,7 @@ extension Level1ViewController: UICollectionViewDataSource, UICollectionViewDele
     }
 
     private func handleSelect(at indexPath: IndexPath) {
+        guard !isInteractionLocked else { return }
         guard tiles[indexPath.item].isRemoved == false else { return }
         
         if let idx = selectedIndexPaths.firstIndex(of: indexPath) {
@@ -258,19 +323,61 @@ extension Level1ViewController: UICollectionViewDataSource, UICollectionViewDele
         }
     }
 
-    // 선택 상태에 따라 statusLabel을 갱신
+    // 선택 상태에 따라 statusLabel과 pronunciationLabel을 갱신
     private func updateSelectionStatusForCurrentSelection() {
         switch selectedIndexPaths.count {
         case 0:
             setStatusText("", compact: false)
+            setPronunciationText(nil)
         case 1:
             let idx = selectedIndexPaths[0].item
             let tile = tiles[idx]
             setStatusText(tile.symbol, compact: false)
+            
+            switch tile.type {
+            case .consonant:
+                let roman = romanForConsonant(tile.symbol) ?? "?"
+                setPronunciationText("\(tile.symbol) (\(roman))")
+            case .vowel:
+                let roman = romanForVowel(tile.symbol) ?? "?"
+                setPronunciationText("\(tile.symbol) (\(roman))")
+            }
         case 2:
             let firstTile = tiles[selectedIndexPaths[0].item]
             let secondTile = tiles[selectedIndexPaths[1].item]
             setStatusText("\(firstTile.symbol)  +  \(secondTile.symbol)", compact: false)
+            
+            // 자/모 순서에 상관없이 각각의 로마자 표기를 찾아 출력
+            let cTile: HangeulTile?
+            let vTile: HangeulTile?
+            if firstTile.type == .consonant && secondTile.type == .vowel {
+                cTile = firstTile; vTile = secondTile
+            } else if firstTile.type == .vowel && secondTile.type == .consonant {
+                cTile = secondTile; vTile = firstTile
+            } else {
+                cTile = nil; vTile = nil
+            }
+            
+            if let c = cTile, let v = vTile {
+                let cRoman = romanForConsonant(c.symbol) ?? "?"
+                let vRoman = romanForVowel(v.symbol) ?? "?"
+                setPronunciationText("\(c.symbol) (\(cRoman))  +  \(v.symbol) (\(vRoman))")
+            } else {
+                // 같은 타입을 선택했을 때도 가능한 범위에서 표기
+                let r1: String
+                if firstTile.type == .consonant {
+                    r1 = "\(firstTile.symbol) (\(romanForConsonant(firstTile.symbol) ?? "?"))"
+                } else {
+                    r1 = "\(firstTile.symbol) (\(romanForVowel(firstTile.symbol) ?? "?"))"
+                }
+                let r2: String
+                if secondTile.type == .consonant {
+                    r2 = "\(secondTile.symbol) (\(romanForConsonant(secondTile.symbol) ?? "?"))"
+                } else {
+                    r2 = "\(secondTile.symbol) (\(romanForVowel(secondTile.symbol) ?? "?"))"
+                }
+                setPronunciationText("\(r1)  +  \(r2)")
+            }
         default:
             break
         }
@@ -327,11 +434,13 @@ extension Level1ViewController: UICollectionViewDataSource, UICollectionViewDele
             return
         }
         
+        isInteractionLocked = true
         showConnectionPath(gridPath: gridPath) { [weak self] in
             guard let self = self else { return }
             self.handleCorrectPair(firstIndex: firstIndex,
                                    secondIndex: secondIndex,
                                    pair: pair)
+            self.isInteractionLocked = false
         }
     }
     
@@ -340,6 +449,8 @@ extension Level1ViewController: UICollectionViewDataSource, UICollectionViewDele
         cells.forEach { $0.playWrongAnimation() }
 
         setStatusText("Path is blocked.", compact: true)
+        setPronunciationText(nil)
+        shakeStatusLabel()
 
         let reloadTargets = selectedIndexPaths
         selectedIndexPaths.removeAll()
@@ -353,7 +464,7 @@ extension Level1ViewController: UICollectionViewDataSource, UICollectionViewDele
         tiles[firstIndex.item].isRemoved = true
         tiles[secondIndex.item].isRemoved = true
         
-        let reloadTargets = selectedIndexPaths
+        let reloadTargets = [firstIndex, secondIndex]
         selectedIndexPaths.removeAll()
         collectionView.reloadItems(at: reloadTargets)
         
@@ -368,6 +479,8 @@ extension Level1ViewController: UICollectionViewDataSource, UICollectionViewDele
         learnedSyllables[pair.syllable] = detail
         
         setStatusText("\(pair.syllable) (\(pair.syllableRoman))", compact: false)
+        // 정답 후에는 해당 자/모의 표기도 잠깐 보여주자
+        setPronunciationText("\(pair.consonant) (\(pair.consonantRoman))   \(pair.vowel) (\(pair.vowelRoman))")
         
         checkLevelClear()
     }
@@ -379,6 +492,8 @@ extension Level1ViewController: UICollectionViewDataSource, UICollectionViewDele
         cells.forEach { $0.playWrongAnimation() }
         
         setStatusText("Select consonant first, then vowel.", compact: true)
+        setPronunciationText(nil)
+        shakeStatusLabel()
         
         let reloadTargets = selectedIndexPaths
         selectedIndexPaths.removeAll()
@@ -390,6 +505,8 @@ extension Level1ViewController: UICollectionViewDataSource, UICollectionViewDele
         cells.forEach { $0.playWrongAnimation() }
         
         setStatusText("Only Consonant + Vowel\npair is allowed.", compact: true)
+        setPronunciationText(nil)
+        shakeStatusLabel()
         
         let reloadTargets = selectedIndexPaths
         selectedIndexPaths.removeAll()

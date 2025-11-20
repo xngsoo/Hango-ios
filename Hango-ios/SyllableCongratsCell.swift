@@ -25,7 +25,7 @@ final class SyllableCongratsCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        contentView.backgroundColor = .systemBackground
+        contentView.backgroundColor = AppTheme.Colors.hanjiBackground
         
         contentView.addSubview(titleLabel)
         contentView.addSubview(backButton)
