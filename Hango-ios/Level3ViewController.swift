@@ -203,14 +203,12 @@ final class Level3ViewController: UIViewController {
     private func generateRandomBoard() -> [HangeulTile] {
         var pool: [HangeulTile] = []
         
-        // level3ValidPairs에서 base와 final을 각각 하나씩 뽑아 타일 풀에 추가
-        // 동일 base/final이 중복될 수 있으나, 게임성 측면에서는 오히려 다양하게 섞이는 효과
         for pair in level3ValidPairs {
-            pool.append(HangeulTile(symbol: pair.baseSyllable, type: .consonant)) // base를 'consonant' 타입 슬롯 재사용
-            pool.append(HangeulTile(symbol: pair.finalConsonant, type: .vowel))   // final을 'vowel' 타입 슬롯 재사용
+            // base를 consonant 타입, final을 vowel 타입 슬롯에 재사용
+            pool.append(HangeulTile(symbol: pair.baseSyllable, type: .consonant))
+            pool.append(HangeulTile(symbol: pair.finalConsonant, type: .vowel))
         }
         
-        // 보드 크기 채우기
         var index = 0
         while pool.count < maxTilesCount {
             let pair = level3ValidPairs[index % level3ValidPairs.count]
@@ -239,7 +237,6 @@ final class Level3ViewController: UIViewController {
         statusLabel.text = text
     }
     
-    // 발음 표기 문자열 업데이트
     private func setPronunciationText(_ text: String?) {
         pronunciationLabel.text = text ?? ""
     }
@@ -252,7 +249,6 @@ final class Level3ViewController: UIViewController {
         statusLabel.layer.add(animation, forKey: "shake")
     }
     
-    // 선택 항목에 대한 표기(로마자) 표시를 위해 Level3 데이터셋에서 역참조
     private func romanForBase(_ base: String) -> (consonant: String, vowel: String, baseRoman: String)? {
         if let item = level3ValidPairs.first(where: { $0.baseSyllable == base }) {
             return (item.consonantRoman, item.vowelRoman, item.baseSyllableRoman)
@@ -322,7 +318,6 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
         }
     }
 
-    // 선택 상태에 따라 statusLabel과 pronunciationLabel을 갱신
     private func updateSelectionStatusForCurrentSelection() {
         switch selectedIndexPaths.count {
         case 0:
@@ -349,7 +344,6 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
             let secondTile = tiles[selectedIndexPaths[1].item]
             setStatusText("\(firstTile.symbol)  +  \(secondTile.symbol)", compact: false)
             
-            // base + final 조합인지 판단
             let baseTile: HangeulTile?
             let finalTile: HangeulTile?
             if firstTile.type == .consonant && secondTile.type == .vowel {
@@ -365,7 +359,6 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
                 let finalRoman = romanForFinal(f.symbol) ?? "?"
                 setPronunciationText("\(b.symbol) (\(baseRoman))  +  \(f.symbol) (\(finalRoman))")
             } else {
-                // 동일 타입끼리 선택한 경우
                 let r1: String
                 if firstTile.type == .consonant {
                     r1 = "\(firstTile.symbol) (\(romanForBase(firstTile.symbol)?.baseRoman ?? "?"))"
@@ -419,7 +412,6 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
             finalIndex = firstIndex
         }
         
-        // Level3 조합 유효성 검사: baseSyllable + finalConsonant가 일치하는 항목 찾기
         guard let pair = level3ValidPairs.first(where: {
             $0.baseSyllable == baseTile.symbol && $0.finalConsonant == finalTile.symbol
         }) else {
@@ -427,13 +419,11 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
             return
         }
         
-        // 경로 존재 확인
         guard let gridPath = findPath(baseIndex, finalIndex) else {
             playBlockedFeedback()
             return
         }
         
-        // 순서 제약: base → final
         guard isBaseThenFinal else {
             playWrongOrderFeedback()
             return
@@ -473,8 +463,12 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
         selectedIndexPaths.removeAll()
         collectionView.reloadItems(at: reloadTargets)
         
-        // LearnedSyllableDetail로 저장 (초/중/종을 모두 반영)
+        // Level3 정보를 모두 담아서 저장
         let detail = LearnedSyllableDetail(
+            baseSyllable: pair.baseSyllable,
+            baseSyllableRoman: pair.baseSyllableRoman,
+            finalConsonant: pair.finalConsonant,
+            finalConsonantRoman: pair.finalConsonantRoman,
             consonant: pair.consonant,
             consonantRoman: pair.consonantRoman,
             vowel: pair.vowel,
@@ -485,7 +479,6 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
         learnedSyllables[pair.syllable] = detail
         
         setStatusText("\(pair.syllable) (\(pair.syllableRoman))", compact: false)
-        // 정답 후에는 base/받침 표기도 잠깐 보여주자
         setPronunciationText("\(pair.baseSyllable) (\(pair.baseSyllableRoman))   +   \(pair.finalConsonant) (\(pair.finalConsonantRoman))")
         
         checkLevelClear()
@@ -730,7 +723,6 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
     }
     
     private func canMakeAnyMorePairs() -> Bool {
-        // base, final 인덱스 맵
         var baseIndices: [String: [IndexPath]] = [:]
         var finalIndices: [String: [IndexPath]] = [:]
         

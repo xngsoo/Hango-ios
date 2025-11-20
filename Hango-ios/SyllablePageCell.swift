@@ -108,7 +108,7 @@ final class SyllablePageCell: UICollectionViewCell {
             syllableLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             syllableLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor, constant: -80),
             
-            // Consonant
+            // Consonant/Base
             consonantTitleLabel.topAnchor.constraint(equalTo: syllableLabel.bottomAnchor, constant: 40),
             consonantTitleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 24),
             consonantTitleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -24),
@@ -117,7 +117,7 @@ final class SyllablePageCell: UICollectionViewCell {
             consonantDetailLabel.leadingAnchor.constraint(equalTo: consonantTitleLabel.leadingAnchor),
             consonantDetailLabel.trailingAnchor.constraint(equalTo: consonantTitleLabel.trailingAnchor),
             
-            // Vowel
+            // Vowel/Final
             vowelTitleLabel.topAnchor.constraint(equalTo: consonantDetailLabel.bottomAnchor, constant: 16),
             vowelTitleLabel.leadingAnchor.constraint(equalTo: consonantTitleLabel.leadingAnchor),
             vowelTitleLabel.trailingAnchor.constraint(equalTo: consonantTitleLabel.trailingAnchor),
@@ -145,9 +145,29 @@ final class SyllablePageCell: UICollectionViewCell {
     
     func configure(with detail: LearnedSyllableDetail) {
         syllableLabel.text = detail.syllable
-        
-        consonantDetailLabel.text = "\(detail.consonant)  (\(detail.consonantRoman))"
-        vowelDetailLabel.text = "\(detail.vowel)  (\(detail.vowelRoman))"
-        combinedDetailLabel.text = "\(detail.syllable)  (\(detail.syllableRoman))"
+
+        if let base = detail.baseSyllable,
+           let baseRoman = detail.baseSyllableRoman,
+           let final = detail.finalConsonant,
+           let finalRoman = detail.finalConsonantRoman {
+            // Level3 표시 형식: 음절(초+중), 받침, 조합된 음절
+            consonantTitleLabel.text = "Base syllable (초+중)"
+            vowelTitleLabel.text = "Final consonant (받침)"
+            combinedTitleLabel.text = "Combined syllable"
+            
+            consonantDetailLabel.text = "\(base)  (\(baseRoman))"
+            vowelDetailLabel.text = "\(final)  (\(finalRoman))"
+            combinedDetailLabel.text = "\(detail.syllable)  (\(detail.syllableRoman))"
+        } else {
+            // Level1/2 기존 형식: 초성, 중성, 조합된 음절
+            consonantTitleLabel.text = "Consonant (초성)"
+            vowelTitleLabel.text = "Vowel (중성)"
+            combinedTitleLabel.text = "Combined syllable"
+            
+            consonantDetailLabel.text = "\(detail.consonant)  (\(detail.consonantRoman))"
+            vowelDetailLabel.text = "\(detail.vowel)  (\(detail.vowelRoman))"
+            combinedDetailLabel.text = "\(detail.syllable)  (\(detail.syllableRoman))"
+        }
     }
 }
+
