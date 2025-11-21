@@ -59,6 +59,26 @@ class Level1ViewController: UIViewController {
     // 조합한 음절 저장 (리뷰용 배열)
     private var learnedSyllables: [String: LearnedSyllableDetail] = [:]
     
+    // 자음/모음 -> 로마자 표기 캐시 딕셔너리
+    private lazy var consonantRomanMap: [String: String] = {
+        var dict: [String: String] = [:]
+        for pair in level1ValidPairs {
+            if dict[pair.consonant] == nil {
+                dict[pair.consonant] = pair.consonantRoman
+            }
+        }
+        return dict
+    }()
+    private lazy var vowelRomanMap: [String: String] = {
+        var dict: [String: String] = [:]
+        for pair in level1ValidPairs {
+            if dict[pair.vowel] == nil {
+                dict[pair.vowel] = pair.vowelRoman
+            }
+        }
+        return dict
+    }()
+    
     // 최대 타일 개수
     private var maxTilesCount: Int {
         return numberOfColumns * numberOfRowsMax
@@ -270,11 +290,11 @@ class Level1ViewController: UIViewController {
     /// 선택한 자음의 로마자 표기 가져오기
     private func romanForConsonant(_ symbol: String) -> String? {
         // level1ValidPairs 중 해당 자음을 포함하는 아무 항목에서 roman을 가져온다.
-        return level1ValidPairs.first(where: { $0.consonant == symbol })?.consonantRoman
+        return consonantRomanMap[symbol]
     }
     /// 선택한 모음의 로마자 표기 가져오기
     private func romanForVowel(_ symbol: String) -> String? {
-        return level1ValidPairs.first(where: { $0.vowel == symbol })?.vowelRoman
+        return vowelRomanMap[symbol]
     }
     
     /// 타일선택 이벤트 처리
