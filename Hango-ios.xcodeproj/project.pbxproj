@@ -29,6 +29,8 @@
 		5B033B022ECFEA5D00A538AB /* Level5ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033AF72ECFEA5D00A538AB /* Level5ViewController.swift */; };
 		5B033B032ECFEA5D00A538AB /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033AF92ECFEA5D00A538AB /* MainViewController.swift */; };
 		5B033B042ECFEA5D00A538AB /* SyllableReviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033AFB2ECFEA5D00A538AB /* SyllableReviewViewController.swift */; };
+		5B033B0C2ED0294F00A538AB /* Level3SyllabelLexicon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033B0B2ED0294F00A538AB /* Level3SyllabelLexicon.swift */; };
+		5B033B0E2ED02CEC00A538AB /* Level3List.json in Resources */ = {isa = PBXBuildFile; fileRef = 5B033B0D2ED02CEC00A538AB /* Level3List.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,6 +57,8 @@
 		5B033AF72ECFEA5D00A538AB /* Level5ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level5ViewController.swift; sourceTree = "<group>"; };
 		5B033AF92ECFEA5D00A538AB /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		5B033AFB2ECFEA5D00A538AB /* SyllableReviewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyllableReviewViewController.swift; sourceTree = "<group>"; };
+		5B033B0B2ED0294F00A538AB /* Level3SyllabelLexicon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level3SyllabelLexicon.swift; sourceTree = "<group>"; };
+		5B033B0D2ED02CEC00A538AB /* Level3List.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Level3List.json; sourceTree = "<group>"; };
 		5B8D42C92ECD5BDF007C6FAC /* Hango-ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Hango-ios.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -103,6 +107,8 @@
 				5B033ACF2ECFE9EF00A538AB /* Main.storyboard */,
 				5B033AC22ECFE9EF00A538AB /* Assets.xcassets */,
 				5B033AC32ECFE9EF00A538AB /* Info.plist */,
+				5B033B0B2ED0294F00A538AB /* Level3SyllabelLexicon.swift */,
+				5B033B0D2ED02CEC00A538AB /* Level3List.json */,
 			);
 			path = "Hango-ios";
 			sourceTree = "<group>";
@@ -234,6 +240,7 @@
 			files = (
 				5B033AEB2ECFE9EF00A538AB /* Assets.xcassets in Resources */,
 				5B033AED2ECFE9EF00A538AB /* LaunchScreen.storyboard in Resources */,
+				5B033B0E2ED02CEC00A538AB /* Level3List.json in Resources */,
 				5B033AEE2ECFE9EF00A538AB /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -264,6 +271,7 @@
 				5B033AE72ECFE9EF00A538AB /* SyllablePageCell.swift in Sources */,
 				5B033AE92ECFE9EF00A538AB /* Theme.swift in Sources */,
 				5B033AEA2ECFE9EF00A538AB /* ViewController.swift in Sources */,
+				5B033B0C2ED0294F00A538AB /* Level3SyllabelLexicon.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

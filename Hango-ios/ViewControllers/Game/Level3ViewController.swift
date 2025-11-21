@@ -9,13 +9,15 @@ import UIKit
 
 /// Level 3 메인 게임 화면
 /// - 타일 종류:
-///   1) baseSyllable (초성+중성)  ex) "가"
-///   2) finalConsonant (받침)     ex) "ㄱ"
+///   1) baseSyllable (초성+중성)  ex) "가"  -> .consonant 슬롯 재사용
+///   2) finalConsonant (받침)     ex) "ㄱ"  -> .vowel 슬롯 재사용
 /// - 올바른 매칭: baseSyllable + finalConsonant
 ///   level3ValidPairs에서 일치하는 항목을 찾아 full syllable(초+중+종)을 학습에 반영
 final class Level3ViewController: UIViewController {
 
-    // 상단 상태 라벨
+    //MARK: - UI Components
+    
+    // 상태 레이블 (선택한 타일 표기 or 실패 메세지)
     private let statusLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -24,12 +26,10 @@ final class Level3ViewController: UIViewController {
         label.textAlignment = .center
         label.numberOfLines = 0
         label.lineBreakMode = .byWordWrapping
-        label.setContentHuggingPriority(.defaultLow, for: .vertical)
-        label.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
         return label
     }()
     
-    // 발음 표기 라벨 (statusLabel 아래)
+    // 발음 표기 레이블
     private let pronunciationLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -37,18 +37,32 @@ final class Level3ViewController: UIViewController {
         label.textColor = AppTheme.Colors.ink
         label.textAlignment = .center
         label.numberOfLines = 0
-        label.setContentHuggingPriority(.required, for: .vertical)
-        label.setContentCompressionResistancePriority(.required, for: .vertical)
+        return label
+    }()
+
+    // 낮은 빈도 안내 레이블(기본 숨김)
+    private let lowFrequencyLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = AppTheme.Fonts.labelSmall()
+        label.textColor = .secondaryLabel
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        label.isHidden = true
+        label.text = "이 음절은 사전에 존재하지만 사용 빈도가 매우 낮습니다."
         return label
     }()
 
     private var collectionView: UICollectionView!
-    private let numberOfColumns: Int = 6
-    private let numberOfRowsMax: Int = 7
+    
+    // 게임에 사용할 가로, 세로 타일 개수
+    private let numberOfColumns: Int = 6 // 열 (column)
+    private let numberOfRowsMax: Int = 7 // 행 (row, 최대)
     
     // 전체 타일 배열 (그리드 순서대로)
     private var tiles: [HangeulTile] = []
-    // 현재 선택된 인덱스 (최대 2개)
+    
+    // 현재 선택된 인덱스(타일) (최대 2개)
     private var selectedIndexPaths: [IndexPath] = []
     
     private var numberOfRows: Int {
@@ -60,7 +74,7 @@ final class Level3ViewController: UIViewController {
     private let pathOverlayView = UIView()
     private let pathLayer = CAShapeLayer()
     
-    // 조합한 음절 저장
+    // 조합한 음절 저장 (리뷰용 배열)
     private var learnedSyllables: [String: LearnedSyllableDetail] = [:]
     
     // 최대 타일 개수
@@ -68,7 +82,11 @@ final class Level3ViewController: UIViewController {
         return numberOfColumns * numberOfRowsMax
     }
     
+    // 타일 삭제 애니메이션 중 입력방지 Bool
     private var isInteractionLocked: Bool = false
+    
+    
+    //MARK: - viewDidLoad
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -79,11 +97,30 @@ final class Level3ViewController: UIViewController {
         
         setupStatusLabel()
         setupPronunciationLabel()
+        setupLowFrequencyLabel()
         setupCollectionView()
         setupPathOverlay()
         setupLevel3Tiles()
     }
+    
+    //MARK: - viewDidLayoutSubviews
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        guard let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout else { return }
+
+        let defaultInset: CGFloat = 16
+        let _: CGFloat = 12
+        let totalSpacing = CGFloat(numberOfColumns - 1) * layout.minimumInteritemSpacing
+        let availableWidth = view.bounds.width - (defaultInset * 2) - totalSpacing
+        let itemWidth = max(1, floor(availableWidth / CGFloat(numberOfColumns)))
+
+        layout.itemSize = CGSize(width: itemWidth, height: itemWidth)
+    }
+    
+    //MARK: - Methods
+    
+    /// 상태 레이블 setup
     private func setupStatusLabel() {
         view.addSubview(statusLabel)
         
@@ -93,6 +130,7 @@ final class Level3ViewController: UIViewController {
         ])
     }
     
+    /// 발음 레이블 setup
     private func setupPronunciationLabel() {
         view.addSubview(pronunciationLabel)
         NSLayoutConstraint.activate([
@@ -100,20 +138,39 @@ final class Level3ViewController: UIViewController {
             pronunciationLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             pronunciationLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
-        pronunciationLabel.text = ""
+        pronunciationLabel.text = "" // 초기 비움
+    }
+
+    /// 낮은 빈도 안내 레이블 setup
+    private func setupLowFrequencyLabel() {
+        view.addSubview(lowFrequencyLabel)
+        NSLayoutConstraint.activate([
+            lowFrequencyLabel.topAnchor.constraint(equalTo: pronunciationLabel.bottomAnchor, constant: 4),
+            lowFrequencyLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            lowFrequencyLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+        ])
+        lowFrequencyLabel.isHidden = true
     }
     
+    /// 컬렉션뷰 setup
     private func setupCollectionView() {
         let layout = UICollectionViewFlowLayout()
-        layout.minimumLineSpacing = 10
-        layout.minimumInteritemSpacing = 10
-
-        let visualPadding: CGFloat = 16
-        let topPaddingInside: CGFloat = 12
         
+        // 컬렉션뷰 행 간격
+        layout.minimumLineSpacing = 10
+        // 컬렉션뷰 열 간격
+        layout.minimumInteritemSpacing = 10
+        // 컬렉션뷰 좌우, 하단 contentInset
+        let defaultInset: CGFloat = 16
+        // 컬렉션뷰 상단 contentInset
+        let topInset: CGFloat = 12
+        // 한 줄에서 셀 사이에 가로 간격 총합
         let totalSpacing = CGFloat(numberOfColumns - 1) * layout.minimumInteritemSpacing
-        let availableWidth = view.bounds.width - (visualPadding * 2) - totalSpacing
+        // 실제 셀들의 가용 너비
+        let availableWidth = view.bounds.width - (defaultInset * 2) - totalSpacing
+        // 셀 너비
         let itemWidth = max(1, floor(availableWidth / CGFloat(numberOfColumns)))
+        // 실제 각 셀 사이즈
         layout.itemSize = CGSize(width: itemWidth, height: itemWidth)
 
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -121,10 +178,11 @@ final class Level3ViewController: UIViewController {
         collectionView.backgroundColor = .clear
         collectionView.layer.cornerRadius = AppTheme.Metrics.cornerRadius
         collectionView.contentInsetAdjustmentBehavior = .always
-        collectionView.contentInset = UIEdgeInsets(top: topPaddingInside,
-                                                   left: visualPadding,
-                                                   bottom: visualPadding,
-                                                   right: visualPadding)
+        collectionView.contentInset = UIEdgeInsets(top: topInset,
+                                                   left: defaultInset,
+                                                   bottom: defaultInset,
+                                                   right: defaultInset)
+        collectionView.clipsToBounds = false
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.register(HangeulTileCell.self, forCellWithReuseIdentifier: HangeulTileCell.reuseIdentifier)
@@ -132,10 +190,12 @@ final class Level3ViewController: UIViewController {
         view.addSubview(collectionView)
 
         let rows = numberOfRowsMax
-        let gridHeightCore = itemWidth * CGFloat(rows) + layout.minimumLineSpacing * CGFloat(rows - 1)
-        let gridHeight = gridHeightCore + topPaddingInside + visualPadding
-        let height = collectionView.heightAnchor.constraint(equalToConstant: gridHeight)
-        height.priority = .defaultHigh
+        // 그리드 높이 (전체 타일)
+        let totalGridHeight = itemWidth * CGFloat(rows) + layout.minimumLineSpacing * CGFloat(rows - 1)
+        // 컬렉션뷰 높이 (그리드 높이 + 상단 Inset + 하단 Inset)
+        let collectionHeight = totalGridHeight + defaultInset + topInset
+        let height = collectionView.heightAnchor.constraint(equalToConstant: collectionHeight)
+        height.priority = .defaultHigh // 라벨이 늘면 컬렉션뷰 높이가 살짝 양보
 
         NSLayoutConstraint.activate([
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -144,6 +204,7 @@ final class Level3ViewController: UIViewController {
             height
         ])
 
+        // 상단 safe area ~ 컬렉션뷰 top 사이의 레이아웃 가이드
         let headerGuide = UILayoutGuide()
         view.addLayoutGuide(headerGuide)
         
@@ -155,10 +216,9 @@ final class Level3ViewController: UIViewController {
             
             statusLabel.centerYAnchor.constraint(equalTo: headerGuide.centerYAnchor)
         ])
-        
-        collectionView.clipsToBounds = false
     }
     
+    /// 경로오버레이 setup
     private func setupPathOverlay() {
         if pathOverlayView.superview == nil {
             pathOverlayView.translatesAutoresizingMaskIntoConstraints = false
@@ -192,15 +252,17 @@ final class Level3ViewController: UIViewController {
         }
     }
 
+    /// 레벨3 타일 생성
     private func setupLevel3Tiles() {
         tiles = generateRandomBoard()
         collectionView.reloadData()
-        checkLevelClear()
+        //checkLevelClear()
     }
     
-    /// Level3 보드 구성:
+    /// 전체 타일  랜덤 생성
     /// - baseSyllable(초+중)와 finalConsonant(받침)를 섞어서 maxTilesCount까지 채움
     private func generateRandomBoard() -> [HangeulTile] {
+        // 랜덤 생성된 타일 저장 배열
         var pool: [HangeulTile] = []
         
         for pair in level3ValidPairs {
@@ -209,12 +271,10 @@ final class Level3ViewController: UIViewController {
             pool.append(HangeulTile(symbol: pair.finalConsonant, type: .vowel))
         }
         
-        var index = 0
         while pool.count < maxTilesCount {
-            let pair = level3ValidPairs[index % level3ValidPairs.count]
+            guard let pair = level3ValidPairs.randomElement() else { break }
             pool.append(HangeulTile(symbol: pair.baseSyllable, type: .consonant))
             pool.append(HangeulTile(symbol: pair.finalConsonant, type: .vowel))
-            index += 1
         }
         
         pool.shuffle()
@@ -225,7 +285,7 @@ final class Level3ViewController: UIViewController {
         return pool
     }
 
-    // MARK: - Status text helper (UI-only)
+    /// 상황별 상태 레이블 텍스트 폰트 변경
     private func setStatusText(_ text: String, compact: Bool) {
         if compact {
             statusLabel.font = UIFont.systemFont(ofSize: 32, weight: .semibold)
@@ -237,10 +297,20 @@ final class Level3ViewController: UIViewController {
         statusLabel.text = text
     }
     
+    /// 발음 레이블 텍스트 변경
     private func setPronunciationText(_ text: String?) {
         pronunciationLabel.text = text ?? ""
     }
 
+    /// 낮은 빈도 안내 레이블 표시/숨김
+    private func setLowFrequencyVisible(_ visible: Bool, message: String? = nil) {
+        lowFrequencyLabel.isHidden = !visible
+        if let msg = message {
+            lowFrequencyLabel.text = msg
+        }
+    }
+
+    /// 상태 레이블 흔들림 효과
     private func shakeStatusLabel() {
         let animation = CAKeyframeAnimation(keyPath: "transform.translation.x")
         animation.timingFunction = CAMediaTimingFunction(name: .linear)
@@ -249,50 +319,24 @@ final class Level3ViewController: UIViewController {
         statusLabel.layer.add(animation, forKey: "shake")
     }
     
+    /// base syllable의 로마자 정보 가져오기
     private func romanForBase(_ base: String) -> (consonant: String, vowel: String, baseRoman: String)? {
         if let item = level3ValidPairs.first(where: { $0.baseSyllable == base }) {
             return (item.consonantRoman, item.vowelRoman, item.baseSyllableRoman)
         }
         return nil
     }
-    
+    /// final consonant의 로마자 표기 가져오기
     private func romanForFinal(_ final: String) -> String? {
         return level3ValidPairs.first(where: { $0.finalConsonant == final })?.finalConsonantRoman
     }
-}
-
-extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return tiles.count
-    }
-    
-    func collectionView(_ collectionView: UICollectionView,
-                        cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: HangeulTileCell.reuseIdentifier,
-            for: indexPath
-        ) as? HangeulTileCell else {
-            return UICollectionViewCell()
-        }
-        
-        let tile = tiles[indexPath.item]
-        cell.configure(with: tile)
-        
-        let isSelected = selectedIndexPaths.contains(indexPath)
-        cell.setSelectedAppearance(isSelected, type: tile.type)
-        
-        return cell
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        handleSelect(at: indexPath)
-    }
-
+    /// 타일선택 이벤트 처리
     private func handleSelect(at indexPath: IndexPath) {
         guard !isInteractionLocked else { return }
         guard tiles[indexPath.item].isRemoved == false else { return }
         
+        // 이미 선택된 타일을 다시 선택하는 경우 (선택 해제)
         if let idx = selectedIndexPaths.firstIndex(of: indexPath) {
             selectedIndexPaths.remove(at: idx)
             collectionView.reloadItems(at: [indexPath])
@@ -317,16 +361,19 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
             checkPair()
         }
     }
-
+    
+    /// 선택된 타일에 따른 상태, 발음 레이블 업데이트
     private func updateSelectionStatusForCurrentSelection() {
         switch selectedIndexPaths.count {
-        case 0:
-            setStatusText("", compact: false)
+        case 0: // 선택 x
+            setStatusText("Tap a tile to start.", compact: true)
             setPronunciationText(nil)
-        case 1:
+            setLowFrequencyVisible(false)
+        case 1: // 1개 선택
             let idx = selectedIndexPaths[0].item
             let tile = tiles[idx]
             setStatusText(tile.symbol, compact: false)
+            setLowFrequencyVisible(false)
             
             switch tile.type {
             case .consonant: // base syllable
@@ -339,11 +386,12 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
                 let roman = romanForFinal(tile.symbol) ?? "?"
                 setPronunciationText("\(tile.symbol) (\(roman))")
             }
-        case 2:
+        case 2: // 2개 선택
             let firstTile = tiles[selectedIndexPaths[0].item]
             let secondTile = tiles[selectedIndexPaths[1].item]
             setStatusText("\(firstTile.symbol)  +  \(secondTile.symbol)", compact: false)
             
+            // base/final 순서에 상관없이 각각의 로마자 표기를 찾아 출력
             let baseTile: HangeulTile?
             let finalTile: HangeulTile?
             if firstTile.type == .consonant && secondTile.type == .vowel {
@@ -358,7 +406,34 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
                 let baseRoman = romanForBase(b.symbol)?.baseRoman ?? "?"
                 let finalRoman = romanForFinal(f.symbol) ?? "?"
                 setPronunciationText("\(b.symbol) (\(baseRoman))  +  \(f.symbol) (\(finalRoman))")
+                
+                // 낮은 빈도 안내 표시 로직
+                // 1) level3ValidPairs에서 먼저 찾고, 없으면 합성 함수로 완성 음절 계산
+                let syllable: String = {
+                    if let found = level3ValidPairs.first(where: {
+                        $0.baseSyllable == b.symbol && $0.finalConsonant == f.symbol
+                    }) {
+                        return found.syllable
+                    } else {
+                        // base = 초+중으로 이미 합성된 글자이므로,
+                        // base를 다시 초/중으로 분해하지 않고 빈도 판정용으로는
+                        // base의 초/중을 추정하기 어렵습니다.
+                        // 하지만 Level3 보드 구성상 base는 level3ValidPairs에서 생성된 값이므로
+                        // 일반적으로 first(where:)에서 찾는 것이 성공합니다.
+                        // 혹시라도 못 찾을 경우엔 안내 레이블을 숨깁니다.
+                        return ""
+                    }
+                }()
+                
+                if !syllable.isEmpty {
+                    let isFrequent = level3FrequentSyllables.contains(syllable)
+                    setLowFrequencyVisible(!isFrequent,
+                                           message: "이 음절은 사전에 존재하지만 사용 빈도가 매우 낮습니다.")
+                } else {
+                    setLowFrequencyVisible(false)
+                }
             } else {
+                // 같은 타입을 선택했을 때도 가능한 범위에서 표기
                 let r1: String
                 if firstTile.type == .consonant {
                     r1 = "\(firstTile.symbol) (\(romanForBase(firstTile.symbol)?.baseRoman ?? "?"))"
@@ -372,12 +447,14 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
                     r2 = "\(secondTile.symbol) (\(romanForFinal(secondTile.symbol) ?? "?"))"
                 }
                 setPronunciationText("\(r1)  +  \(r2)")
+                setLowFrequencyVisible(false)
             }
         default:
             break
         }
     }
-
+    
+    /// 선택된 2개 타일이 유효한 조합(base+final)이고 경로도 존재하는지 체크
     private func checkPair() {
         guard selectedIndexPaths.count == 2 else { return }
         
@@ -390,6 +467,7 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
         let isBaseThenFinal = (firstTile.type == .consonant && secondTile.type == .vowel)
         let isSameType = (firstTile.type == secondTile.type)
         
+        // base + base or final + final
         if isSameType {
             playWrongFeedback()
             return
@@ -415,20 +493,34 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
         guard let pair = level3ValidPairs.first(where: {
             $0.baseSyllable == baseTile.symbol && $0.finalConsonant == finalTile.symbol
         }) else {
-            playWrongFeedback()
+            // 허용된 조합이 아닌 경우
+            // 여기서 사전/유니코드 기준으로는 유효한 음절인지 한 번 더 체크해서
+            // lowFrequencyLabel을 띄우거나
+            // "이 레벨에서는 다루지 않는 음절이에요" 같은 안내로 바꿀 수 있음
+            setStatusText("This syllable exists but is rarely used.", compact: true)
+            setPronunciationText(nil)
+            setLowFrequencyVisible(true, message: "이 레벨에서는 학습 대상이 아닌 음절이에요.")
+            shakeStatusLabel()
+            
+            let reloadTargets = selectedIndexPaths
+            selectedIndexPaths.removeAll()
+            collectionView.reloadItems(at: reloadTargets)
             return
         }
         
+        // 경로가 막혀있을 경우
         guard let gridPath = findPath(baseIndex, finalIndex) else {
             playBlockedFeedback()
             return
         }
         
+        // 순서가 반대인 경우
         guard isBaseThenFinal else {
             playWrongOrderFeedback()
             return
         }
         
+        // 경로 애니메이션, 삭제 애니메이션 진행중
         isInteractionLocked = true
         showConnectionPath(gridPath: gridPath) { [weak self] in
             guard let self = self else { return }
@@ -439,51 +531,22 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
         }
     }
     
+    /// 경로 막혔을 경우 상태 레이블 업데이트
     private func playBlockedFeedback() {
         let cells = selectedIndexPaths.compactMap { collectionView.cellForItem(at: $0) as? HangeulTileCell }
         cells.forEach { $0.playWrongAnimation() }
 
         setStatusText("Path is blocked.", compact: true)
         setPronunciationText(nil)
+        setLowFrequencyVisible(false)
         shakeStatusLabel()
 
         let reloadTargets = selectedIndexPaths
         selectedIndexPaths.removeAll()
         collectionView.reloadItems(at: reloadTargets)
     }
-
-    private func handleCorrectPair(firstIndex: IndexPath,
-                                   secondIndex: IndexPath,
-                                   pair: Level3SyllableConfig) {
-        
-        tiles[firstIndex.item].isRemoved = true
-        tiles[secondIndex.item].isRemoved = true
-        
-        let reloadTargets = [firstIndex, secondIndex]
-        selectedIndexPaths.removeAll()
-        collectionView.reloadItems(at: reloadTargets)
-        
-        // Level3 정보를 모두 담아서 저장
-        let detail = LearnedSyllableDetail(
-            baseSyllable: pair.baseSyllable,
-            baseSyllableRoman: pair.baseSyllableRoman,
-            finalConsonant: pair.finalConsonant,
-            finalConsonantRoman: pair.finalConsonantRoman,
-            consonant: pair.consonant,
-            consonantRoman: pair.consonantRoman,
-            vowel: pair.vowel,
-            vowelRoman: pair.vowelRoman,
-            syllable: pair.syllable,
-            syllableRoman: pair.syllableRoman
-        )
-        learnedSyllables[pair.syllable] = detail
-        
-        setStatusText("\(pair.syllable) (\(pair.syllableRoman))", compact: false)
-        setPronunciationText("\(pair.baseSyllable) (\(pair.baseSyllableRoman))   +   \(pair.finalConsonant) (\(pair.finalConsonantRoman))")
-        
-        checkLevelClear()
-    }
     
+    /// 틀린 순서 조합의 경우 상태 레이블 업데이트
     private func playWrongOrderFeedback() {
         let cells = selectedIndexPaths.compactMap {
             collectionView.cellForItem(at: $0) as? HangeulTileCell
@@ -492,20 +555,7 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
         
         setStatusText("Select base syllable first, then final consonant.", compact: true)
         setPronunciationText(nil)
-        
-        shakeStatusLabel()
-        
-        let reloadTargets = selectedIndexPaths
-        selectedIndexPaths.removeAll()
-        collectionView.reloadItems(at: reloadTargets)
-    }
-
-    private func playWrongFeedback() {
-        let cells = selectedIndexPaths.compactMap { collectionView.cellForItem(at: $0) as? HangeulTileCell }
-        cells.forEach { $0.playWrongAnimation() }
-        
-        setStatusText("Only Base + Final\npair is allowed.", compact: true)
-        setPronunciationText(nil)
+        setLowFrequencyVisible(false)
         shakeStatusLabel()
         
         let reloadTargets = selectedIndexPaths
@@ -513,13 +563,86 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
         collectionView.reloadItems(at: reloadTargets)
     }
     
+    /// 잘못된 조합의 경우 상태 레이블 업데이트
+    private func playWrongFeedback() {
+        let cells = selectedIndexPaths.compactMap { collectionView.cellForItem(at: $0) as? HangeulTileCell }
+        cells.forEach { $0.playWrongAnimation() }
+        
+        setStatusText("Only Base + Final\npair is allowed.", compact: true)
+        setPronunciationText(nil)
+        setLowFrequencyVisible(false)
+        shakeStatusLabel()
+        
+        let reloadTargets = selectedIndexPaths
+        selectedIndexPaths.removeAll()
+        collectionView.reloadItems(at: reloadTargets)
+    }
+    
+    /// 연결된 경로 표시
+    private func showConnectionPath(gridPath: [(row: Int, col: Int)], completion: @escaping () -> Void) {
+        guard gridPath.count >= 2 else {
+            completion()
+            return
+        }
+        
+        let path = UIBezierPath()
+        var isFirstPoint = true
+        
+        for point in gridPath {
+            let row = point.row
+            let col = point.col
+            let item = row * numberOfColumns + col
+            guard item < tiles.count else { continue }
+            
+            let indexPath = IndexPath(item: item, section: 0)
+            guard let attrs = collectionView.layoutAttributesForItem(at: indexPath) else { continue }
+            
+            let centerInCollection = attrs.center
+            let centerInOverlay = pathOverlayView.convert(centerInCollection, from: collectionView)
+            
+            if isFirstPoint {
+                path.move(to: centerInOverlay)
+                isFirstPoint = false
+            } else {
+                path.addLine(to: centerInOverlay)
+            }
+        }
+        
+        pathLayer.path = path.cgPath
+        
+        CATransaction.begin()
+        CATransaction.setCompletionBlock {
+            CATransaction.begin()
+            CATransaction.setCompletionBlock {
+                self.pathLayer.path = nil
+                completion()
+            }
+            let fadeOut = CABasicAnimation(keyPath: "opacity")
+            fadeOut.fromValue = 1.0
+            fadeOut.toValue = 0.0
+            fadeOut.duration = 0.2
+            self.pathLayer.add(fadeOut, forKey: "fadeOut")
+            self.pathLayer.opacity = 0.0
+            CATransaction.commit()
+        }
+        
+        let fadeIn = CABasicAnimation(keyPath: "opacity")
+        fadeIn.fromValue = 0.0
+        fadeIn.toValue = 1.0
+        fadeIn.duration = 0.15
+        pathLayer.add(fadeIn, forKey: "fadeIn")
+        pathLayer.opacity = 1.0
+        
+        CATransaction.commit()
+    }
+    
     private func position(for item: Int) -> (row: Int, col: Int) {
         let row = item / numberOfColumns
         let col = item % numberOfColumns
         return (row, col)
     }
-
-    // MARK: - Path finding (Level1/2와 동일)
+    
+    /// 경로찾기
     private func findPath(_ firstIndex: IndexPath,
                           _ secondIndex: IndexPath) -> [(row: Int, col: Int)]? {
         let rows = numberOfRows
@@ -650,66 +773,7 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
         return result.isEmpty ? nil : result
     }
     
-    private func showConnectionPath(
-        gridPath: [(row: Int, col: Int)],
-        completion: @escaping () -> Void
-    ) {
-        guard gridPath.count >= 2 else {
-            completion()
-            return
-        }
-        
-        let path = UIBezierPath()
-        var isFirstPoint = true
-        
-        for point in gridPath {
-            let row = point.row
-            let col = point.col
-            let item = row * numberOfColumns + col
-            guard item < tiles.count else { continue }
-            
-            let indexPath = IndexPath(item: item, section: 0)
-            guard let attrs = collectionView.layoutAttributesForItem(at: indexPath) else { continue }
-            
-            let centerInCollection = attrs.center
-            let centerInOverlay = pathOverlayView.convert(centerInCollection, from: collectionView)
-            
-            if isFirstPoint {
-                path.move(to: centerInOverlay)
-                isFirstPoint = false
-            } else {
-                path.addLine(to: centerInOverlay)
-            }
-        }
-        
-        pathLayer.path = path.cgPath
-        
-        CATransaction.begin()
-        CATransaction.setCompletionBlock {
-            CATransaction.begin()
-            CATransaction.setCompletionBlock {
-                self.pathLayer.path = nil
-                completion()
-            }
-            let fadeOut = CABasicAnimation(keyPath: "opacity")
-            fadeOut.fromValue = 1.0
-            fadeOut.toValue = 0.0
-            fadeOut.duration = 0.2
-            self.pathLayer.add(fadeOut, forKey: "fadeOut")
-            self.pathLayer.opacity = 0.0
-            CATransaction.commit()
-        }
-        
-        let fadeIn = CABasicAnimation(keyPath: "opacity")
-        fadeIn.fromValue = 0.0
-        fadeIn.toValue = 1.0
-        fadeIn.duration = 0.15
-        pathLayer.add(fadeIn, forKey: "fadeIn")
-        pathLayer.opacity = 1.0
-        
-        CATransaction.commit()
-    }
-    
+    /// 레벨 클리어 확인
     private func checkLevelClear() {
         let hasRemaining = tiles.contains { $0.isRemoved == false }
         if !hasRemaining {
@@ -722,6 +786,43 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
         }
     }
     
+    /// 올바른 조합 선택 이벤트 처리
+    private func handleCorrectPair(firstIndex: IndexPath,
+                                   secondIndex: IndexPath,
+                                   pair: Level3SyllableConfig) {
+        
+        tiles[firstIndex.item].isRemoved = true
+        tiles[secondIndex.item].isRemoved = true
+        
+        let reloadTargets = [firstIndex, secondIndex]
+        selectedIndexPaths.removeAll()
+        collectionView.reloadItems(at: reloadTargets)
+        
+        // Level3 정보를 모두 담아서 저장
+        let detail = LearnedSyllableDetail(
+            baseSyllable: pair.baseSyllable,
+            baseSyllableRoman: pair.baseSyllableRoman,
+            finalConsonant: pair.finalConsonant,
+            finalConsonantRoman: pair.finalConsonantRoman,
+            consonant: pair.consonant,
+            consonantRoman: pair.consonantRoman,
+            vowel: pair.vowel,
+            vowelRoman: pair.vowelRoman,
+            syllable: pair.syllable,
+            syllableRoman: pair.syllableRoman
+        )
+        learnedSyllables[pair.syllable] = detail
+        
+        // 정답 후에는 해당 base/final의 표기도 잠깐 보여주자
+        setStatusText("\(pair.syllable) (\(pair.syllableRoman))", compact: false)
+
+        setPronunciationText("\(pair.baseSyllable) (\(pair.baseSyllableRoman))   +   \(pair.finalConsonant) (\(pair.finalConsonantRoman))")
+        setLowFrequencyVisible(false)
+        
+        checkLevelClear()
+    }
+    
+    /// 남은 타일 중 조합 가능한 타일이 있는지 확인
     private func canMakeAnyMorePairs() -> Bool {
         var baseIndices: [String: [IndexPath]] = [:]
         var finalIndices: [String: [IndexPath]] = [:]
@@ -752,6 +853,7 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
         return false
     }
     
+    /// 레벨 클리어 시 팝업 띄우기
     private func showLevelClearPopup() {
         let alert = UIAlertController(
             title: "Level 3 Clear 🎉",
@@ -777,6 +879,7 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
         present(alert, animated: true)
     }
     
+    /// 리뷰 화면으로 이동
     private func showSyllableReviewScreen() {
         guard !learnedSyllables.isEmpty else {
             let alert = UIAlertController(
@@ -803,6 +906,37 @@ extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDele
             nav.modalPresentationStyle = .formSheet
             present(nav, animated: true)
         }
+    }
+}
+
+//MARK: - CollectionView DataSource, Delegate
+
+extension Level3ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return tiles.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView,
+                        cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: HangeulTileCell.reuseIdentifier,
+            for: indexPath
+        ) as? HangeulTileCell else {
+            return UICollectionViewCell()
+        }
+        
+        let tile = tiles[indexPath.item]
+        cell.configure(with: tile)
+        
+        let isSelected = selectedIndexPaths.contains(indexPath)
+        cell.setSelectedAppearance(isSelected, type: tile.type)
+        
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        handleSelect(at: indexPath)
     }
 }
 
