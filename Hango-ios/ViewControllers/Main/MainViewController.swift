@@ -17,13 +17,22 @@ final class MainViewController: UIViewController {
 //        "Level 4",
 //        "Level 5",
     ]
+    private let gameTitle: UILabel = {
+        let label = UILabel()
+        label.text = "Hango"
+        label.font = UIFont.systemFont(ofSize: 56, weight: .bold)
+        label.textAlignment = .center
+        label.textColor = AppTheme.Colors.ink
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         AppTheme.applyNavigationBarAppearance()
         view.backgroundColor = AppTheme.Colors.hanjiBackground
-        title = "Hango"
-
+        //title = "Hango"
+        view.addSubview(gameTitle)
         setupStack()
         setupLevelButtons()
     }
@@ -41,6 +50,12 @@ final class MainViewController: UIViewController {
             stack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             stack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             stack.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
+        
+        NSLayoutConstraint.activate([
+            gameTitle.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            gameTitle.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            gameTitle.bottomAnchor.constraint(equalTo: stack.topAnchor, constant: 32)
         ])
     }
 
