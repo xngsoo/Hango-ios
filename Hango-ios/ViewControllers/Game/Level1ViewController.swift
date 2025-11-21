@@ -245,12 +245,10 @@ class Level1ViewController: UIViewController {
             pool.append(HangeulTile(symbol: pair.vowel, type: .vowel))
         }
         
-        var index = 0
         while pool.count < maxTilesCount {
-            let pair = level1ValidPairs[index % level1ValidPairs.count]
+            guard let pair = level1ValidPairs.randomElement() else { break }
             pool.append(HangeulTile(symbol: pair.consonant, type: .consonant))
             pool.append(HangeulTile(symbol: pair.vowel, type: .vowel))
-            index += 1
         }
         
         pool.shuffle()
