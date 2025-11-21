@@ -67,6 +67,11 @@ final class MainViewController: UIViewController {
             button.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
             button.backgroundColor = AppTheme.Colors.surface
             button.layer.cornerRadius = AppTheme.Metrics.cornerRadius
+            button.layer.shadowColor = UIColor.black.cgColor
+            button.layer.shadowOpacity = 0.12
+            button.layer.shadowOffset = CGSize(width: 0, height: 4)
+            button.layer.shadowRadius = 6
+            button.layer.masksToBounds = false
             button.heightAnchor.constraint(equalToConstant: 56).isActive = true
             button.tag = index + 1
             button.addTarget(self, action: #selector(didTapLevel(_:)), for: .touchUpInside)
