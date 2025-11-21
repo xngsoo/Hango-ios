@@ -10,7 +10,13 @@ import UIKit
 final class MainViewController: UIViewController {
 
     private let stack = UIStackView()
-    private let levels = ["Level 1", "Level 2", "Level 3", "Level 4", "Level 5"]
+    private let levels = [
+        "Level 1",
+        "Level 2",
+        "Level 3",
+//        "Level 4",
+//        "Level 5",
+    ]
 
     override func viewDidLoad() {
         super.viewDidLoad()
