@@ -6,30 +6,57 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		5B033AD82ECFE9EF00A538AB /* HangeulTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033ABC2ECFE9EF00A538AB /* HangeulTile.swift */; };
+		5B033AD92ECFE9EF00A538AB /* HangeulTileCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033ABE2ECFE9EF00A538AB /* HangeulTileCell.swift */; };
+		5B033ADA2ECFE9EF00A538AB /* ToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033ABF2ECFE9EF00A538AB /* ToastView.swift */; };
+		5B033ADB2ECFE9EF00A538AB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033AC12ECFE9EF00A538AB /* AppDelegate.swift */; };
+		5B033ADC2ECFE9EF00A538AB /* Level1Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033AC62ECFE9EF00A538AB /* Level1Config.swift */; };
+		5B033ADE2ECFE9EF00A538AB /* Level2Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033AC82ECFE9EF00A538AB /* Level2Config.swift */; };
+		5B033AE02ECFE9EF00A538AB /* Level3Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033ACA2ECFE9EF00A538AB /* Level3Config.swift */; };
+		5B033AE52ECFE9EF00A538AB /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033AD12ECFE9EF00A538AB /* SceneDelegate.swift */; };
+		5B033AE62ECFE9EF00A538AB /* SyllableCongratsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033AD22ECFE9EF00A538AB /* SyllableCongratsCell.swift */; };
+		5B033AE72ECFE9EF00A538AB /* SyllablePageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033AD32ECFE9EF00A538AB /* SyllablePageCell.swift */; };
+		5B033AE92ECFE9EF00A538AB /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033AD52ECFE9EF00A538AB /* Theme.swift */; };
+		5B033AEA2ECFE9EF00A538AB /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033AD62ECFE9EF00A538AB /* ViewController.swift */; };
+		5B033AEB2ECFE9EF00A538AB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5B033AC22ECFE9EF00A538AB /* Assets.xcassets */; };
+		5B033AED2ECFE9EF00A538AB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5B033AC52ECFE9EF00A538AB /* LaunchScreen.storyboard */; };
+		5B033AEE2ECFE9EF00A538AB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5B033ACF2ECFE9EF00A538AB /* Main.storyboard */; };
+		5B033AFE2ECFEA5D00A538AB /* Level1ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033AF32ECFEA5D00A538AB /* Level1ViewController.swift */; };
+		5B033AFF2ECFEA5D00A538AB /* Level2ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033AF42ECFEA5D00A538AB /* Level2ViewController.swift */; };
+		5B033B002ECFEA5D00A538AB /* Level3ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033AF52ECFEA5D00A538AB /* Level3ViewController.swift */; };
+		5B033B012ECFEA5D00A538AB /* Level4ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033AF62ECFEA5D00A538AB /* Level4ViewController.swift */; };
+		5B033B022ECFEA5D00A538AB /* Level5ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033AF72ECFEA5D00A538AB /* Level5ViewController.swift */; };
+		5B033B032ECFEA5D00A538AB /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033AF92ECFEA5D00A538AB /* MainViewController.swift */; };
+		5B033B042ECFEA5D00A538AB /* SyllableReviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B033AFB2ECFEA5D00A538AB /* SyllableReviewViewController.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		5B033ABC2ECFE9EF00A538AB /* HangeulTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HangeulTile.swift; sourceTree = "<group>"; };
+		5B033ABE2ECFE9EF00A538AB /* HangeulTileCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HangeulTileCell.swift; sourceTree = "<group>"; };
+		5B033ABF2ECFE9EF00A538AB /* ToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastView.swift; sourceTree = "<group>"; };
+		5B033AC12ECFE9EF00A538AB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		5B033AC22ECFE9EF00A538AB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		5B033AC32ECFE9EF00A538AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		5B033AC42ECFE9EF00A538AB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		5B033AC62ECFE9EF00A538AB /* Level1Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level1Config.swift; sourceTree = "<group>"; };
+		5B033AC82ECFE9EF00A538AB /* Level2Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level2Config.swift; sourceTree = "<group>"; };
+		5B033ACA2ECFE9EF00A538AB /* Level3Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level3Config.swift; sourceTree = "<group>"; };
+		5B033ACE2ECFE9EF00A538AB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		5B033AD12ECFE9EF00A538AB /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		5B033AD22ECFE9EF00A538AB /* SyllableCongratsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyllableCongratsCell.swift; sourceTree = "<group>"; };
+		5B033AD32ECFE9EF00A538AB /* SyllablePageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyllablePageCell.swift; sourceTree = "<group>"; };
+		5B033AD52ECFE9EF00A538AB /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		5B033AD62ECFE9EF00A538AB /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		5B033AF32ECFEA5D00A538AB /* Level1ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level1ViewController.swift; sourceTree = "<group>"; };
+		5B033AF42ECFEA5D00A538AB /* Level2ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level2ViewController.swift; sourceTree = "<group>"; };
+		5B033AF52ECFEA5D00A538AB /* Level3ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level3ViewController.swift; sourceTree = "<group>"; };
+		5B033AF62ECFEA5D00A538AB /* Level4ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level4ViewController.swift; sourceTree = "<group>"; };
+		5B033AF72ECFEA5D00A538AB /* Level5ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level5ViewController.swift; sourceTree = "<group>"; };
+		5B033AF92ECFEA5D00A538AB /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
+		5B033AFB2ECFEA5D00A538AB /* SyllableReviewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyllableReviewViewController.swift; sourceTree = "<group>"; };
 		5B8D42C92ECD5BDF007C6FAC /* Hango-ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Hango-ios.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		5B8D42DB2ECD5BE2007C6FAC /* Exceptions for "Hango-ios" folder in "Hango-ios" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = 5B8D42C82ECD5BDF007C6FAC /* Hango-ios */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		5B8D42CB2ECD5BDF007C6FAC /* Hango-ios */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				5B8D42DB2ECD5BE2007C6FAC /* Exceptions for "Hango-ios" folder in "Hango-ios" target */,
-			);
-			path = "Hango-ios";
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		5B8D42C62ECD5BDF007C6FAC /* Frameworks */ = {
@@ -42,10 +69,96 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5B033ABD2ECFE9EF00A538AB /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				5B033ABC2ECFE9EF00A538AB /* HangeulTile.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		5B033AC02ECFE9EF00A538AB /* View */ = {
+			isa = PBXGroup;
+			children = (
+				5B033ABE2ECFE9EF00A538AB /* HangeulTileCell.swift */,
+				5B033ABF2ECFE9EF00A538AB /* ToastView.swift */,
+				5B033AD22ECFE9EF00A538AB /* SyllableCongratsCell.swift */,
+				5B033AD32ECFE9EF00A538AB /* SyllablePageCell.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		5B033AD72ECFE9EF00A538AB /* Hango-ios */ = {
+			isa = PBXGroup;
+			children = (
+				5B033ABD2ECFE9EF00A538AB /* Model */,
+				5B033AC02ECFE9EF00A538AB /* View */,
+				5B033AFD2ECFEA5D00A538AB /* ViewControllers */,
+				5B033B062ECFEA8B00A538AB /* Config */,
+				5B033AD52ECFE9EF00A538AB /* Theme.swift */,
+				5B033AD62ECFE9EF00A538AB /* ViewController.swift */,
+				5B033AD12ECFE9EF00A538AB /* SceneDelegate.swift */,
+				5B033AC12ECFE9EF00A538AB /* AppDelegate.swift */,
+				5B033AC52ECFE9EF00A538AB /* LaunchScreen.storyboard */,
+				5B033ACF2ECFE9EF00A538AB /* Main.storyboard */,
+				5B033AC22ECFE9EF00A538AB /* Assets.xcassets */,
+				5B033AC32ECFE9EF00A538AB /* Info.plist */,
+			);
+			path = "Hango-ios";
+			sourceTree = "<group>";
+		};
+		5B033AF82ECFEA5D00A538AB /* Game */ = {
+			isa = PBXGroup;
+			children = (
+				5B033AF32ECFEA5D00A538AB /* Level1ViewController.swift */,
+				5B033AF42ECFEA5D00A538AB /* Level2ViewController.swift */,
+				5B033AF52ECFEA5D00A538AB /* Level3ViewController.swift */,
+				5B033AF62ECFEA5D00A538AB /* Level4ViewController.swift */,
+				5B033AF72ECFEA5D00A538AB /* Level5ViewController.swift */,
+			);
+			path = Game;
+			sourceTree = "<group>";
+		};
+		5B033AFA2ECFEA5D00A538AB /* Main */ = {
+			isa = PBXGroup;
+			children = (
+				5B033AF92ECFEA5D00A538AB /* MainViewController.swift */,
+			);
+			path = Main;
+			sourceTree = "<group>";
+		};
+		5B033AFC2ECFEA5D00A538AB /* Review */ = {
+			isa = PBXGroup;
+			children = (
+				5B033AFB2ECFEA5D00A538AB /* SyllableReviewViewController.swift */,
+			);
+			path = Review;
+			sourceTree = "<group>";
+		};
+		5B033AFD2ECFEA5D00A538AB /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				5B033AF82ECFEA5D00A538AB /* Game */,
+				5B033AFA2ECFEA5D00A538AB /* Main */,
+				5B033AFC2ECFEA5D00A538AB /* Review */,
+			);
+			path = ViewControllers;
+			sourceTree = "<group>";
+		};
+		5B033B062ECFEA8B00A538AB /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				5B033AC62ECFE9EF00A538AB /* Level1Config.swift */,
+				5B033AC82ECFE9EF00A538AB /* Level2Config.swift */,
+				5B033ACA2ECFE9EF00A538AB /* Level3Config.swift */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
 		5B8D42C02ECD5BDF007C6FAC = {
 			isa = PBXGroup;
 			children = (
-				5B8D42CB2ECD5BDF007C6FAC /* Hango-ios */,
+				5B033AD72ECFE9EF00A538AB /* Hango-ios */,
 				5B8D42CA2ECD5BDF007C6FAC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -72,9 +185,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				5B8D42CB2ECD5BDF007C6FAC /* Hango-ios */,
 			);
 			name = "Hango-ios";
 			packageProductDependencies = (
@@ -122,6 +232,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5B033AEB2ECFE9EF00A538AB /* Assets.xcassets in Resources */,
+				5B033AED2ECFE9EF00A538AB /* LaunchScreen.storyboard in Resources */,
+				5B033AEE2ECFE9EF00A538AB /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -132,10 +245,48 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5B033AD82ECFE9EF00A538AB /* HangeulTile.swift in Sources */,
+				5B033AD92ECFE9EF00A538AB /* HangeulTileCell.swift in Sources */,
+				5B033ADA2ECFE9EF00A538AB /* ToastView.swift in Sources */,
+				5B033ADB2ECFE9EF00A538AB /* AppDelegate.swift in Sources */,
+				5B033ADC2ECFE9EF00A538AB /* Level1Config.swift in Sources */,
+				5B033ADE2ECFE9EF00A538AB /* Level2Config.swift in Sources */,
+				5B033AE02ECFE9EF00A538AB /* Level3Config.swift in Sources */,
+				5B033AE52ECFE9EF00A538AB /* SceneDelegate.swift in Sources */,
+				5B033AE62ECFE9EF00A538AB /* SyllableCongratsCell.swift in Sources */,
+				5B033AFE2ECFEA5D00A538AB /* Level1ViewController.swift in Sources */,
+				5B033AFF2ECFEA5D00A538AB /* Level2ViewController.swift in Sources */,
+				5B033B002ECFEA5D00A538AB /* Level3ViewController.swift in Sources */,
+				5B033B012ECFEA5D00A538AB /* Level4ViewController.swift in Sources */,
+				5B033B022ECFEA5D00A538AB /* Level5ViewController.swift in Sources */,
+				5B033B032ECFEA5D00A538AB /* MainViewController.swift in Sources */,
+				5B033B042ECFEA5D00A538AB /* SyllableReviewViewController.swift in Sources */,
+				5B033AE72ECFE9EF00A538AB /* SyllablePageCell.swift in Sources */,
+				5B033AE92ECFE9EF00A538AB /* Theme.swift in Sources */,
+				5B033AEA2ECFE9EF00A538AB /* ViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		5B033AC52ECFE9EF00A538AB /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5B033AC42ECFE9EF00A538AB /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		5B033ACF2ECFE9EF00A538AB /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5B033ACE2ECFE9EF00A538AB /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		5B8D42DD2ECD5BE2007C6FAC /* Debug */ = {
