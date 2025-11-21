@@ -111,7 +111,7 @@ class Level1ViewController: UIViewController {
         guard let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout else { return }
 
         let defaultInset: CGFloat = 16
-        let topInset: CGFloat = 12
+        let _: CGFloat = 12
         let totalSpacing = CGFloat(numberOfColumns - 1) * layout.minimumInteritemSpacing
         let availableWidth = view.bounds.width - (defaultInset * 2) - totalSpacing
         let itemWidth = max(1, floor(availableWidth / CGFloat(numberOfColumns)))
