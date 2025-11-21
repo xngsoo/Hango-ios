@@ -104,6 +104,21 @@ class Level1ViewController: UIViewController {
         setupLevel1Tiles()
     }
     
+    //MARK: - viewDidLayoutSubviews
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        guard let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout else { return }
+
+        let defaultInset: CGFloat = 16
+        let topInset: CGFloat = 12
+        let totalSpacing = CGFloat(numberOfColumns - 1) * layout.minimumInteritemSpacing
+        let availableWidth = view.bounds.width - (defaultInset * 2) - totalSpacing
+        let itemWidth = max(1, floor(availableWidth / CGFloat(numberOfColumns)))
+
+        layout.itemSize = CGSize(width: itemWidth, height: itemWidth)
+    }
+    
     //MARK: - Methods
     
     /// 상태 레이블 setup
@@ -116,7 +131,7 @@ class Level1ViewController: UIViewController {
         ])
     }
     
-    // 발음 레이블 setup
+    /// 발음 레이블 setup
     private func setupPronunciationLabel() {
         view.addSubview(pronunciationLabel)
         NSLayoutConstraint.activate([
@@ -166,9 +181,9 @@ class Level1ViewController: UIViewController {
 
         let rows = numberOfRowsMax
         // 그리드 높이 (전체 타일)
-        let totalGirdHeight = itemWidth * CGFloat(rows) + layout.minimumLineSpacing * CGFloat(rows - 1)
-        // 컬렉션뷰 높이 (그리드 높이 + 좌우,하단 Inset + 상단 Inset)
-        let collectionHeight = totalGirdHeight + defaultInset + topInset
+        let totalGridHeight = itemWidth * CGFloat(rows) + layout.minimumLineSpacing * CGFloat(rows - 1)
+        // 컬렉션뷰 높이 (그리드 높이 + 상단 Inset + 하단 Inset)
+        let collectionHeight = totalGridHeight + defaultInset + topInset
         let height = collectionView.heightAnchor.constraint(equalToConstant: collectionHeight)
         height.priority = .defaultHigh // 라벨이 늘면 컬렉션뷰 높이가 살짝 양보
 
@@ -234,8 +249,9 @@ class Level1ViewController: UIViewController {
         //checkLevelClear()
     }
     
-    /// 전체 타일을  랜덤 생성
-    /// - ValidPairs를 기반으로 자음+모음 타일을 섞어서 maxTilesCount 개까지 채운다.
+    /// 전체 타일  랜덤 생성
+    /// - 1차로 level1ValidPair의 모든 자음/모음을 한 번씩 넣고
+    ///  부족한 수는 랜덤으로 채운뒤 섞어서 maxTilesCount까지만 사용
     private func generateRandomBoard() -> [HangeulTile] {
         // 랜덤 생성된 타일 저장 배열
         var pool: [HangeulTile] = []
@@ -330,7 +346,7 @@ class Level1ViewController: UIViewController {
     private func updateSelectionStatusForCurrentSelection() {
         switch selectedIndexPaths.count {
         case 0: // 선택 x
-            setStatusText("", compact: false)
+            setStatusText("Tap a tile to start.", compact: true)
             setPronunciationText(nil)
         case 1: // 1개 선택
             let idx = selectedIndexPaths[0].item
